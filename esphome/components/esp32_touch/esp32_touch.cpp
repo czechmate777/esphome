@@ -15,7 +15,7 @@ void ESP32TouchComponent::setup() {
   touch_pad_init();
 
   if (this->iir_filter_enabled_()) {
-    touch_pad_filter_start(this->iir_filter_);
+    touch_pad_filter_enable(this->iir_filter_);
   }
 
   touch_pad_set_meas_time(this->sleep_cycle_, this->meas_cycle_);
@@ -114,9 +114,9 @@ void ESP32TouchComponent::loop() {
   for (auto *child : this->children_) {
     uint16_t value;
     if (this->iir_filter_enabled_()) {
-      touch_pad_read_filtered(child->get_touch_pad(), &value);
+      touch_pad_read_raw_data(child->get_touch_pad(), &value);
     } else {
-      touch_pad_read(child->get_touch_pad(), &value);
+      touch_pad_read_raw_data(child->get_touch_pad(), &value);
     }
 
     child->value_ = value;
