@@ -14,17 +14,19 @@ void ESP32TouchComponent::setup() {
   ESP_LOGCONFIG(TAG, "Setting up ESP32 Touch Hub...");
   touch_pad_init();
 
-  if (this->iir_filter_enabled_()) {
-    touch_pad_filter_start(this->iir_filter_);
-  }
+  // if (this->iir_filter_enabled_()) {
+  //   touch_pad_filter_start(this->iir_filter_);
+  // }
 
   touch_pad_set_meas_time(this->sleep_cycle_, this->meas_cycle_);
   touch_pad_set_voltage(this->high_voltage_reference_, this->low_voltage_reference_, this->voltage_attenuation_);
 
   for (auto *child : this->children_) {
-    // Disable interrupt threshold
-    touch_pad_config(child->get_touch_pad(), 0);
+    touch_pad_config(child->get_touch_pad());
   }
+
+  //touch_pad_set_fsm_mode(TOUCH_FSM_MODE_TIMER);
+  //touch_pad_fsm_start();
 }
 
 void ESP32TouchComponent::dump_config() {
@@ -112,12 +114,13 @@ void ESP32TouchComponent::loop() {
   const uint32_t now = millis();
   bool should_print = this->setup_mode_ && now - this->setup_mode_last_log_print_ > 250;
   for (auto *child : this->children_) {
-    uint16_t value;
-    if (this->iir_filter_enabled_()) {
-      touch_pad_read_filtered(child->get_touch_pad(), &value);
-    } else {
-      touch_pad_read(child->get_touch_pad(), &value);
-    }
+    uint32_t value;
+    touch_pad_read_raw_data(child->get_touch_pad(), &value);
+    // if (this->iir_filter_enabled_()) {
+    //   touch_pad_read_filtered(child->get_touch_pad(), &value);
+    // } else {
+    //   touch_pad_read(child->get_touch_pad(), &value);
+    // }
 
     child->value_ = value;
     child->publish_state(value < child->get_threshold());
@@ -136,29 +139,29 @@ void ESP32TouchComponent::loop() {
 }
 
 void ESP32TouchComponent::on_shutdown() {
-  bool is_wakeup_source = false;
+  // bool is_wakeup_source = false;
 
-  if (this->iir_filter_enabled_()) {
-    touch_pad_filter_stop();
-    touch_pad_filter_delete();
-  }
+  // // if (this->iir_filter_enabled_()) {
+  // //   touch_pad_fsm_stop();
+  // //   touch_pad_filter_disable();
+  // // }
 
-  for (auto *child : this->children_) {
-    if (child->get_wakeup_threshold() != 0) {
-      if (!is_wakeup_source) {
-        is_wakeup_source = true;
-        // Touch sensor FSM mode must be 'TOUCH_FSM_MODE_TIMER' to use it to wake-up.
-        touch_pad_set_fsm_mode(TOUCH_FSM_MODE_TIMER);
-      }
+  // for (auto *child : this->children_) {
+  //   if (child->get_wakeup_threshold() != 0) {
+  //     if (!is_wakeup_source) {
+  //       is_wakeup_source = true;
+  //       // Touch sensor FSM mode must be 'TOUCH_FSM_MODE_TIMER' to use it to wake-up.
+  //       touch_pad_set_fsm_mode(TOUCH_FSM_MODE_TIMER);
+  //     }
 
-      // No filter available when using as wake-up source.
-      touch_pad_config(child->get_touch_pad(), child->get_wakeup_threshold());
-    }
-  }
+  //     // No filter available when using as wake-up source.
+  //     touch_pad_config(child->get_touch_pad(), child->get_wakeup_threshold());
+  //   }
+  // }
 
-  if (!is_wakeup_source) {
-    touch_pad_deinit();
-  }
+  // // if (!is_wakeup_source) {
+  // //   touch_pad_deinit();
+  // // }
 }
 
 ESP32TouchBinarySensor::ESP32TouchBinarySensor(touch_pad_t touch_pad, uint16_t threshold, uint16_t wakeup_threshold)
