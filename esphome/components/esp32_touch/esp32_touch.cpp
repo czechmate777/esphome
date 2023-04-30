@@ -115,7 +115,7 @@ void ESP32TouchComponent::loop() {
 
   uint32_t touch_value;
 
-  touch_pad_read_raw_data(button[i], &touch_value);
+  touch_pad_read_raw_data(9, &touch_value);
 
   // for (auto *child : this->children_) {
   //   uint32_t value;
