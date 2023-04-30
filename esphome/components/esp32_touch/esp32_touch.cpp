@@ -29,7 +29,6 @@ void ESP32TouchComponent::setup() {
 
 void ESP32TouchComponent::dump_config() {
   ESP_LOGCONFIG(TAG, "Config for ESP32 Touch Hub:");
-  ESP_LOGCONFIG(TAG, "  TOUCH_PAD_NUM9 is '%d':", TOUCH_PAD_NUM9);
   ESP_LOGCONFIG(TAG, "  Meas cycle: %.2fms", this->meas_cycle_ / (8000000.0f / 1000.0f));
   ESP_LOGCONFIG(TAG, "  Sleep cycle: %.2fms", this->sleep_cycle_ / (150000.0f / 1000.0f));
 
@@ -124,6 +123,7 @@ void ESP32TouchComponent::loop() {
     child->publish_state(value < child->get_threshold());
 
     if (should_print) {
+      ESP_LOGCONFIG(TAG, "====> TOUCH_PAD_NUM9 is '%d':", TOUCH_PAD_NUM9);
       ESP_LOGD(TAG, "Touch Pad '%s' (T%u): %u", child->get_name().c_str(), child->get_touch_pad(), value);
     }
 
