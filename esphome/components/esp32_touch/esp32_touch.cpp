@@ -25,7 +25,7 @@ void ESP32TouchComponent::setup() {
     touch_pad_config(child->get_touch_pad());
   }
 
-  // touch_pad_set_fsm_mode(TOUCH_FSM_MODE_TIMER);
+  touch_pad_set_fsm_mode(TOUCH_FSM_MODE_TIMER);
   touch_pad_fsm_start();
 }
 
